@@ -22,10 +22,35 @@ public class WPNetwork_swift {
     typealias Completion = (result: AnyObject?, error: NSError?) -> ()
     static let errorDomain = "simpleNetwork"
     
+    // 全局网络会话
+    lazy var session = {
+        return NSURLSession.sharedSession()
+    }()
+    
+    
+    
     func requestJSON(method: HTTPMethod, _ urlString: String, _ parameter: [String: String]?,completion: Completion) {
         
         if let request = requestInfo(method, urlString, parameter) {
-        
+            session.dataTaskWithRequest(request, completionHandler: { (data, response, error) -> Void in
+                if (error != nil && data == nil) {
+                    completion(result: nil, error: error)
+                }
+                
+                let json: AnyObject? =  NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions.allZeros, error: nil)
+                
+                if json == nil {
+                    let error = NSError(domain: WPNetwork_swift.errorDomain, code: -1, userInfo: ["error":"JSON序列化失败"])
+                    completion(result: nil, error: error)
+                    return
+                }
+                
+                dispatch_async(dispatch_get_main_queue(), { () -> Void in
+                    completion(result: json, error: nil)
+                })
+                
+            })
+            
         
         }
         

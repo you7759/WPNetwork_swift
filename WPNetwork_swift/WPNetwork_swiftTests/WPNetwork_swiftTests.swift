@@ -69,13 +69,28 @@ class simpleNetWorkTests: XCTestCase {
         XCTAssert(network.queryString(["a":"1", "b":"我", "version":"ios 8.0"]) == "b=%E6%88%91&a=1&version=ios%208.0", "百分号转义错误")
     }
     
-    
+    // 测试坏请求访问
     func testBadRequest() {
         network.requestJSON(.GET, "", nil) { (result, error) -> () in
             println(error)
             XCTAssertNotNil(error, "坏网络请求失败")
         }
         
+    }
+    
+    // 测试正常网络访问
+    func testRequestJSON() {
+        let expectation = expectationWithDescription(testHTTPHost)
+        
+        network.requestJSON(.GET, testHTTPHost, nil) { (result, error) -> () in
+            println(result)
+            expectation.fulfill()
+        }
+        
+        waitForExpectationsWithTimeout(15.0, handler: { (error) -> Void in
+            
+            XCTAssertNil(error)
+        })
     }
     
     
